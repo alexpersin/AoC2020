@@ -1,0 +1,1 @@
+cat inputs/5 | sed -e 's/B/1/g; s/F/0/g; s/R/1/g; s/L/0/g' | while read x; do echo $((2#$x)); done | sort -n | tail -1
