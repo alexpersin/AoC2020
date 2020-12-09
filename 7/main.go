@@ -1,24 +1,32 @@
 package main
 
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+)
+
 // read each line, regex parse into arguments
 // create node if not exists, add to map
 // add contains connections between nodes
 // start at gold bag, add parents to set.
 // continue recursively on parents if not already in set
 
-struct Node {
-	parents 
-}
+// struct Node {
+// 	parents
+// }
 
-func main(){
+func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	// bags := make(map[string]Node)
 
-	bags := make(map[string]Node)
-
-	i := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		instructions[i] = line
-		i++
+		l := strings.Split(line, "contain")
+		outer := l[0]
+		s := strings.Split(l[1], ",")
+		fmt.Println(outer)
+		fmt.Println(s)
 	}
 }
