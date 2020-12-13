@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
+	"regexp"
 )
 
 // read each line, regex parse into arguments
@@ -13,20 +13,37 @@ import (
 // start at gold bag, add parents to set.
 // continue recursively on parents if not already in set
 
-// struct Node {
-// 	parents
-// }
+type Node struct {
+	key string
+}
+
+func NewNode(key string) *Node {
+	return &Node{
+		key: key
+	}
+}
+
+type Graph struct {
+	nodes []*Node
+	edges map[string][]*Node
+}
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
-	// bags := make(map[string]Node)
+
+	r, _ := regexp.Compile(`^(\w+ \w+) bags contain (\d+ \w+ \w+ \w+)*,* *(\d+ \w+ \w+ \w+)*,* *(\d+ \w+ \w+ \w+)*,* *(\d+ \w+ \w+ \w+)*\.*$`)
+	// r, _ := regexp.Compile(`.*bags contain).*`)
+	// bags := make(map[string]Node
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		l := strings.Split(line, "contain")
-		outer := l[0]
-		s := strings.Split(l[1], ",")
-		fmt.Println(outer)
-		fmt.Println(s)
+		m := r.FindAllStringSubmatch(line, -1)
+		fmt.Println(line)
+		if len(m) > 0 {
+			for _, x := range m[0] {
+				fmt.Println(x)
+			}
+			fmt.Println("\n")
+		}
 	}
 }
