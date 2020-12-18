@@ -12,7 +12,7 @@ class Cube:
     def cycle(self):
         """Cycle the cube to the next state"""
         if self.active and self.active_neighbours not in (2,3):
-                self.active = False
+            self.active = False
         elif self.active_neighbours == 3:
             self.active = True
         self.active_neighbours = 0
