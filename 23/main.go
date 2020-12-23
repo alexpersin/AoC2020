@@ -1,5 +1,3 @@
-// Create a linked list and a map from val to cup
-//
 package main
 
 import (
@@ -29,7 +27,6 @@ func main() {
 			first = c
 		}
 		prev = c
-		fmt.Println(i, data[i])
 	}
 
 	var c *Cup
@@ -41,8 +38,7 @@ func main() {
 	}
 	c.nxt = first
 	current := first
-	// fmt.Println(lookup[100].nxt.val)
-	fmt.Println("Starting")
+
 	var destination int
 	for i := 0; i < ROUNDS; i++ {
 		removed := []*Cup{current.nxt, current.nxt.nxt, current.nxt.nxt.nxt}
