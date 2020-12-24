@@ -3,6 +3,7 @@ from itertools import product
 COL = 90
 ROW = 91
 
+# For sample
 # COL = 10
 # ROW = 10
 
@@ -13,11 +14,11 @@ class Square:
         self.floor = state == "."
 
     def signal(self):
-        """Tell this cube that it has an active neighbour"""
+        """Tell this square that it has an occupied neighbour"""
         self.occupied_neighbours += 1
 
     def cycle(self):
-        """Cycle the cube to the next state"""
+        """Cycle the square to the next state"""
         changed = False
         if not self.floor:
             if not self.occupied and self.occupied_neighbours == 0:
@@ -62,27 +63,26 @@ for i in range(-1,ROW+1):
 
 print_space(space)
 
-
 changed = True
 while changed:
     changed = False
     # Iterate over the space sending a signal to each neighbour
     for (x,y), square in space.items():
-        if x in (-1,ROW) or y in (-1,COL):
+        if not square.occupied:
             continue
-        if square.occupied:
-            for xo, yo in product(*[(-1,0,1)]*2):
-                m = 1
-                cx = x + m*xo
-                cy = y + m*yo
+        for xo, yo in product((-1,0,1),(-1,0,1)):
+            if xo == 0 and yo == 0:
+                continue
+            m = 1
+            cx = x + (m*xo)
+            cy = y + (m*yo)
+            los = space[(cx,cy)]
+            while los.floor and cx >= 0 and cx < ROW and cy >= 0 and cy < COL:
+                m += 1
+                cx = x + (m*xo)
+                cy = y + (m*yo)
                 los = space[(cx,cy)]
-                while los.floor and cx > 0 and cx < ROW and cy > 0 and cy < COL:
-                    m += 1
-                    cx = x + m*xo
-                    cy = y + m*yo
-                    los = space[(cx,cy)]
-                # print(f"Square {x},{y} signalling square {cx},{cy} {los.floor}")
-                los.signal()
+            los.signal()
 
     # Cycle the space, activating or deactivating
     for (x,y), square in space.items():
