@@ -1,12 +1,9 @@
-CREATE TABLE day1 IF NOT EXISTS (
+CREATE TABLE day1 (
     key serial PRIMARY KEY,
     depth integer
 );
 
-COPY day1
-FROM
-    'input.csv';
-
+\copy day1 (depth) FROM 'input.csv';
 WITH cte AS (
     SELECT
         depth,
