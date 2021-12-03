@@ -55,12 +55,33 @@ def evaluate_2(expr):
                 output.append(last_val + evaluate_2(item))
         else:
             output.append(item)
-    
+
+    expr = iter(expr)
+    output = [next(expr)]
+    for item in expr:
+        try:
+            item = int(item)
+        except:
+            pass
+
+        if output[-1] == '+':
+            # Add the current item to the last value
+            if isinstance(item, int):
+                output.pop()
+                last_val = output.pop()
+                output.append(last_val + item)
+            else:
+                output.pop()
+                last_val = output.pop()
+                output.append(last_val + evaluate_2(item))
+        else:
+            output.append(item)
+
     print(output)
 
 """
-For item in list 
-if int, add to output 
+For item in list
+if int, add to output
 if item is a list, evaluate it and add to list
 if item is a plus, set last item to this plus that
 if item is a mult, ignore
