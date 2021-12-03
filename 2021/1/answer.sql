@@ -21,7 +21,6 @@ FROM
 WITH cte AS (
     SELECT
         row_number() OVER (ORDER BY key ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) rn,
-        depth,
         sum(depth) OVER (ORDER BY key ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) win3
     FROM day1
 ),
