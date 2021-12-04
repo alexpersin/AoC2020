@@ -1,3 +1,17 @@
+"""
+Start by placing the corner tile in the corner
+for each possible tile
+    place a tile by placing it on a sqaure neighbouring a tile
+    and joining it with the exposed edges
+    if the board is complete, finish
+    else recurse
+    if there are no tiles that can be placed, return False
+
+need a list of available tiles
+need a list of exposed edges
+need a dict of edge to tile
+"""
+
 from collections import defaultdict
 from itertools import combinations
 from functools import reduce
@@ -80,8 +94,8 @@ class Board:
     provides get_neighbour_edges and place_tile methods for each square
     """
     def __init__(self):
-        self.placed = set()
         self._board = []
+        self.exposed_edges = defaultdict(lambda: 0)
         for i in range(12):
             row = []
             for j in range(12):
@@ -93,50 +107,65 @@ class Board:
             for square in row:
                 yield square
 
-    def on_board(self, tile):
-        return tile.ID in self.placed
+    def place(self, tile, row, col) -> bool:
+        # Check place is not filled
+        if self._board[row][col]:
+            print("Position already filled!")
+            return False
+        # Check edges line up with neighbours
+        for neighbour_edge, edge in zip(self.get_neighbour_edges(row, col), tile.edges):
+            if neighbour_edge and neighbour_edge != 'EDGE' and neighbour_edge != edge:
+                print(f"Edge {edge} on tile {tile.ID} does not match neighbour, cannot place")
+                return False
+        # Place tile
+        self._board[row][col] = tile
+        # Update list of exposed edges
+        for neighbour_edge, edge in zip(self.get_neighbour_edges(row, col), tile.edges):
+            if neighbour_edge and neighbour_edge != 'EDGE':
+                self.exposed_edges[neighbour_edge] = self.exposed_edges[neighbour_edge] - 1
+            elif neighbour_edge != 'EDGE':
+                self.exposed_edges[edge] += 1
+        print(list(self.get_neighbour_edges(row, col)))
+        print(f"Placed tile {tile.ID} at ({row}, {col})")
+        print(f"Exposed edges are now {self.exposed_edges}")
+        return True
 
-    def place(self, square, tile) -> bool:
+    def get_neighbour_edges(self, row, col):
         """
-        Places the tile in the square in a correct orientation if possible
-        otherwise returns False
+        Yields all the neighbouring edges of square
         """
-        neighbours = list(self.get_neighbour_edges(square))
-        for t in tile.orientations():
-            for a, b in zip(neighbours, t.edges):
-                if a and (a!=b):
-                    continue
-            else:
-                new = Board()
-                new._board = self._board.copy()
-                new.placed = self.placed.copy()
-                new._board[square//12][square % 12] = tile
-                new.placed.add(tile.ID)
-                return new
-        return False
-
-    def get_neighbour_edges(self, i):
-        """
-        Yields all the neighbouring edges of tile i
-        """
-        row = i//12
-        col = i % 12
         if row > 0:
             n = self._board[row-1][col]
             if n:
                 yield n.edges[0] or None
+            else:
+                yield None
+        else:
+            yield 'EDGE'
         if col < 11:
             n = self._board[row][col+1]
             if n:
                 yield n.edges[1] or None
+            else:
+                yield None
+        else:
+            yield 'EDGE'
         if row < 11:
             n = self._board[row+1][col]
             if n:
                 yield n.edges[2] or None
+            else:
+                yield None
+        else:
+            yield 'EDGE'
         if col > 0:
             n = self._board[row][col-1]
             if n:
                 yield n.edges[3] or None
+            else:
+                yield None
+        else:
+            yield 'EDGE'
 
     def __str__(self):
         o = []
@@ -149,85 +178,59 @@ class Board:
 with open("inputs/20", 'r') as f:
     data = f.read().split("\n\n")
 
-edges = defaultdict(list)
-
-tiles = []
+available_edges = defaultdict(list)
+available_tiles = {}
 for item in data:
     item = item.strip().split('\n')
     id_str = item[0]
     _id = int(id_str.split(' ')[-1][:-1])
     image = item[1:]
     tile = Tile(_id, image)
-    tiles.append(tile)
+    available_tiles[_id] = tile
     for edge in tile.all_edges():
-        edges[edge].append(tile)
-
-for k, v in edges.items():
-    for t1 in v:
-        for t2 in v:
-            if t1.ID == t2.ID:
-                continue
-            t1.possible_neighbours.add(t2)
+        available_edges[edge].append(tile)
 
 board = Board()
 
 # Set the corner tile
-start = 1021
-s = None
-for t in tiles:
-    if t.ID == start:
-        t.flip_vertical()
-        n = list(t.possible_neighbours)
-        s = t
-board._board[0][0] = s
-board.placed.add(s)
+start = available_tiles[1021]
+start.flip_vertical()
+ok = board.place(start, 0, 0)
+if ok:
+    del available_tiles[1021]
+    for edge in tile.all_edges():
+        available_edges[edge].remove(tile)
 
-def get_possible_tiles(board, square):
-    # Possible tiles have an edge that matches a neighbour
-    neighbour_edges = list(board.get_neighbour_edges(square))
-    print("Neighbour edges:", neighbour_edges)
-    for edge in neighbour_edges:
-        for tile in edges[edge]:
-            if not board.on_board(tile):
-                yield tile
+# def place():
 
-# Fit the other tiles
 
-def fit(board, square):
-    print(board)
-    tiles = list(get_possible_tiles(board, square))
-    if not tiles:
-        return False
-    if square == 144:
-        return board
-    for tile in tiles:
-        new = board.place(square, tile)
-        if new:
-            return fit(new, square+1)
-        return False
 
-# fit(board, square=1)
+# def get_possible_tiles(board, square):
+#     # Possible tiles have an edge that matches a neighbour
+#     neighbour_edges = list(board.get_neighbour_edges(square))
+#     print("Neighbour edges:", neighbour_edges)
+#     for edge in neighbour_edges:
+#         for tile in edges[edge]:
+#             if not board.on_board(tile):
+#                 yield tile
 
-print(board)
-print(s)
-print(list(get_possible_tiles(board, 12)))
+# # Fit the other tiles
 
-"""
-a tile can only be valid if there are possible tiles to place next to it
-fit returns true if placing that tile there results in a complete image
-fit:
-    if no fits:
-        return false
-    for tile in possible tiles for square:
-        if last_square:
-            return True or print board
-        place tile
-        fit(next_square)
+# def fit(board, square):
+#     print(board)
+#     tiles = list(get_possible_tiles(board, square))
+#     if not tiles:
+#         return False
+#     if square == 144:
+#         return board
+#     for tile in tiles:
+#         new = board.place(square, tile)
+#         if new:
+#             return fit(new, square+1)
+#         return False
 
-While there are remaining tiles try and fit a tile onto the board
-if there are no fits remove the last tile from the board
-fit(): given a position, find a tile that fits in that place. if no fits return false
-when a tile is found, call fit on the next place
-if that returns false, return false
-if it returns true then the board will contain the pieces all fitted
-"""
+# # fit(board, square=1)
+
+# print(board)
+# print(s)
+# print(list(get_possible_tiles(board, 12)))
